@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สุ่มรางวัลเงินสด</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            padding: 50px; 
+            background-color: #f0f4f8; 
+        }
+        .box { 
+            background: white; 
+            border-radius: 20px; 
+            padding: 40px; 
+            display: inline-block; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            width: 350px; 
+        }
+        h1 { color: #1b5e20; font-size: 26px; margin-bottom: 20px; }
+        #result { 
+            font-size: 32px; 
+            font-weight: bold; 
+            color: #2e7d32; 
+            margin: 20px 0; 
+            min-height: 80px; 
+            border: 3px dashed #a5d6a7; 
+            padding: 20px; 
+            border-radius: 12px;
+            background-color: #f1f8e9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .status-text { color: #555; font-size: 16px; margin-bottom: 15px; font-weight: 500; }
+        .ref-code { font-size: 14px; color: #888; margin-top: 5px; font-weight: normal; }
+        
+        button { 
+            background: linear-gradient(135deg, #43a047, #2e7d32);
+            color: white; 
+            border: none; 
+            padding: 18px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 18px; 
+            transition: 0.3s; 
+            width: 100%;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
+        }
+        button:hover:not(:disabled) { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(46, 125, 50, 0.4);
+        }
+        button:disabled { 
+            background: #bdbdbd; 
+            cursor: not-allowed; 
+            box-shadow: none;
+        }
+
+        /* Animation สุ่มเบาๆ */
+        .animate-flicker {
+            animation: flicker 0.1s infinite;
+        }
+        @keyframes flicker {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h1>💰 รับรางวัลเงินสด</h1>
+    <div id="status" class="status-text">กดปุ่มด้านล่างเพื่อลุ้นโชค!</div>
+    <div id="result">? ? ? ?</div>
+    <button id="drawBtn" onclick="startDraw()">กดปุ่มรับเงินสด</button>
+</div>
+
+<script>
+    const prizeConfig = [
+        { label: "เงินสด 20฿",  code: "CASH20",    weight: 75 },
+        { label: "เงินสด 50฿",  code: "CASH50",    weight: 20 },
+        { label: "เงินสด 100฿", code: "CASH100",   weight: 4 },
+        { label: "เงินสด 500฿", code: "CASH500",   weight: 0.8 },
+        { label: "เงินสด 1000฿", code: "JACKPOT",  weight: 0.2 }
+    ];
+
+    const btn = document.getElementById('drawBtn');
+    const statusText = document.getElementById('status');
+    const resultDiv = document.getElementById('result');
+
+    window.onload = function() {
+        const savedCode = localStorage.getItem('myCashCode');
+        const savedLabel = localStorage.getItem('myCashLabel');
+
+        if (savedCode && savedLabel) {
+            renderPrize(savedLabel, savedCode, "คุณได้รับรางวัลนี้ไปแล้ว");
+            disableButton();
+        }
+    };
+
+    function startDraw() {
+        // ปิดปุ่มทันทีเพื่อกันการกดรัว
+        btn.disabled = true;
+        statusText.innerText = "กำลังสุ่มรางวัล...";
+        resultDiv.classList.add('animate-flicker');
+
+        // หน่วงเวลาสุ่มให้ดูตื่นเต้น (1.5 วินาที)
+        setTimeout(() => {
+            const prize = getRandomPrize();
+            
+            // บันทึกค่า
+            localStorage.setItem('myCashCode', prize.code);
+            localStorage.setItem('myCashLabel', prize.label);
+            
+            // แสดงผล
+            resultDiv.classList.remove('animate-flicker');
+            renderPrize(prize.label, prize.code, "ยินดีด้วย! คุณได้รับ");
+            disableButton();
+        }, 1500);
+    }
+
+    function getRandomPrize() {
+        const randomNum = Math.random() * 100;
+        let cumulativeWeight = 0;
+
+        for (const prize of prizeConfig) {
+            cumulativeWeight += prize.weight;
+            if (randomNum <= cumulativeWeight) {
+                return prize;
+            }
+        }
+        return prizeConfig[0];
+    }
+
+    function renderPrize(label, code, status) {
+        statusText.innerText = status;
+        resultDiv.innerHTML = `
+            <div>${label}</div>
+            <div class="ref-code">Ref: ${code}</div>
+        `;
+    }
+
+    function disableButton() {
+        btn.disabled = true;
+        btn.innerText = "รับสิทธิ์เรียบร้อยแล้ว";
+    }
+</script>
+
+</body>
+</html>
